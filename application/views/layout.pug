@@ -1,0 +1,47 @@
+doctype html
+html(lang="es")
+	head
+		meta(charset="utf-8")
+		meta(name="viewport", content="width=device-width, initial-scale=1")
+		title= title
+		link(rel="stylesheet" href="/dist/css/bootstrap.min.css")
+		link(rel="stylesheet" href="/css/main.css")
+	body
+		nav.navbar.navbar-expand-md.navbar-dark.bg-dark.mb-4
+			div.container
+				a.navbar-brand(href="/") Centinela
+				button.navbar-toggler(type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation")
+					span.navbar-toggler-icon
+				div.collapse.navbar-collapse#navbarCollapse
+					ul.navbar-nav.mr-auto
+						if rol == 'admin'
+							li.nav-item.active
+								a.nav-link(href="/add") Add Sitio
+									span.sr-only (current)
+							li.nav-item.active
+								a.nav-link(href="/alerta") Alertas
+									span.sr-only (current)
+							li.nav-item.active
+								a.nav-link(href="/alerta/dashboard") Historial
+									span.sr-only (current)
+							li.nav-item.dropdown
+								a.nav-link.dropdown-toggle#dpdn(href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Usuarios
+								div.dropdown-menu(aria-labelledby="dpdn")
+									a.dropdown-item(href="/usuarios/admin") Admin
+									div.dropdown-divider
+									a.dropdown-item(href="/usuarios/add") Agregar usuario
+					div.form-inline.mt-2.mt-md-0#formSearchTable
+						ul.navbar-nav.mr-auto
+							li.nav-item
+								if !rol
+									a.nav-link(href="/login") Login
+								else
+									a.nav-link(href="/logout") Logout
+					
+		script(src="/jquery-3.2.1.min.js")
+		script.
+			window.jQuery || document.write('<script src="../../../../assets/js/vendor/jquery.min.js"><\/script>')
+		script(src="/assets/js/vendor/popper.min.js")
+		script(src="/dist/js/bootstrap.min.js")
+		main.col-sm-8.ml-sm-auto.col-md-12.pt-3(role="main")
+			block content

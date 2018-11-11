@@ -1,0 +1,16 @@
+extends /layout.pug
+
+block content
+	link(rel="stylesheet" href="/css/login.css")
+	div.card.card-container.jumbotron(style="width: 400px; margin: auto;")
+		h3.header= title
+		img#profile-img.profile-img-card(src="//ssl.gstatic.com/accounts/ui/avatar_2x.png")
+		p#profile-name.profile-name-card
+		if (message)
+			div.alert.alert-danger= message
+		form.form-signin(method="post", action="/login" )
+			span#reauth-email.reauth-email
+			input#email.form-control(type="text" name="username", placeholder="User o Email address" value= username autofocus="" required)
+			input#password.form-control(type="password" name="password" placeholder="Password" required)
+			button.btn.btn-lg.btn-primary.btn-block.btn-signin(type="submit") Iniciar sesión
+			a.forgot-password(href="password") ¿Ha olvidado su contraseña?

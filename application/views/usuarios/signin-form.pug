@@ -1,0 +1,18 @@
+extends /layout.pug
+
+block content
+	section.container
+		h1.header= title
+		article.item
+			form.form(method="post", action="/signin")
+				fieldset
+					div
+						input#username.form-control(type="text" name="username", placeholder="User o Email address" autofocus="" required)
+					div
+						input#password.form-control(type="password", name="password", placeholder="password" required)
+					div
+						input#rol.form-control(type="text" name="rol", placeholder="Rol user" required)
+					div.d-flex.justify-content-around
+						input.btn.btn-md.btn-primary(type="submit", value="Registrarse")
+						a.btn.btn-md.btn-primary(href="/login") Loguearse
+						

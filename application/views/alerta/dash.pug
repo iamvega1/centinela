@@ -1,0 +1,279 @@
+extends /layout.pug
+
+block content
+	link(rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.16/datatables.min.css")
+	link(rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css")
+	
+
+	div.container.jumbotron
+		h2.header
+		div.d-flex.justify-content-between
+			canvas#dash(width="700" height="500")
+			div.rango
+				div.card-header(style="margin-top: 80px;")
+					h4(style="text-align: center;margin:0;") Rango
+				div(style="border:1px solid rgba(0,0,0,.125); border-top: 0px")
+					div.form-group.d-flex.justify-content-between
+						label.col-form-label(form="fechaIni" style="text-align:center;") Mes Inicial
+							select.custom-select#mesIni()
+								option(value="1" selected) Enero
+								option(value="2") Febrero
+								option(value="3") Marzo
+								option(value="4") Abril
+								option(value="5") Mayo
+								option(value="6") Junio
+								option(value="7") Julio
+								option(value="8") Agosto
+								option(value="9") Septiembre
+								option(value="10") Octubre
+								option(value="11") Noviembre
+								option(value="12") Diciembre
+						label.col-form-label(style="text-align:center;") Mes Final
+							select.custom-select#mesFin
+								option(value="1") Enero
+								option(value="2") Febrero
+								option(value="3") Marzo
+								option(value="4") Abril
+								option(value="5") Mayo
+								option(value="6") Junio
+								option(value="7") Julio
+								option(value="8") Agosto
+								option(value="9") Septiembre
+								option(value="10") Octubre
+								option(value="11") Noviembre
+								option(value="12" selected) Diciembre
+					div(style="width:30%;margin:auto; margin-bottom:15px;")
+						input#btnAct.form-control.button(type="button" value="Actulizar")
+						input#year(type="hidden" value=year)
+		div.dropdown-divider(style="border-color:darkgray;margin-top:20px; margin-bottom:40px;")
+		div.d-flex.justify-content-center(style="width:100%")
+			div(style="width:50%")
+				h3(style="text-align: center;") Lista de sitios
+				table#tbSitios.table.table-striped.table-bordered(style="text-align: center;")
+
+	script(src="/Chart.bundle.js")
+	script(src="/utils.js")
+	script(type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.16/datatables.min.js")
+	script.
+		Date.prototype.yyyymmdd = function() {
+			var mm = this.getMonth() + 1;
+			var dd = this.getDate();
+
+			return [this.getFullYear(),(mm>9 ? '' : '0') + mm,(dd>9 ? '' : '0') + dd].join(' ');
+		};
+		var backupData,
+			backupMeses = [],
+			_activo =  true,
+			tblSit;
+		
+		document.addEventListener('DOMContentLoaded', function() {
+			initialize()
+		});
+
+		function initialize() {
+			var obj;
+			postAjax(location.origin + '/alerta/data', '', function (data) {
+				obj = JSON.parse(data);
+				backupData = JSON.parse(data);
+				var lim = obtLim();
+				var data = filtrarDatos(obj, lim);
+				drawDashboard(data);
+				writeSitios(obj);
+			})
+		}
+		
+		function actulizar(){
+			var lim = obtLim();
+			if(!lim) return
+			var data = filtrarDatos(backupData, lim);
+		}
+
+		function obtLim(){
+			var lim = {};
+			
+			var year = document.getElementById('year').value;
+			var ini = document.getElementById('mesIni').value;
+			var fin = document.getElementById('mesFin').value;
+			var cantDias = getCantDiasDelMes(fin, year);
+
+			lim.ini = new Date(year + ' ' + ini + ' 1');
+			lim.fin = new Date(year + ' ' + fin + ' ' + cantDias);
+			if (lim.ini > lim.fin) return false;
+			return lim;
+		}
+
+			
+		function getCantDiasDelMes(mes,anio) { 
+			var dias=[0,31,29,31,30,31,30,31,31,30,31,30,31];
+			var fecha, vermes;
+			var ultimo=0;
+
+			if (mes==2){ 
+				fecha = new Date(anio,1,29) 
+				vermes = fecha.getMonth(); 
+				if((vermes+1)!=mes){ultimo=28} 
+			} 
+			if(ultimo==0){ultimo=dias[mes]} 
+			
+			return ultimo; 
+		} 
+
+		function filtrarDatos(data , lim){
+
+			var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+			
+			var lstMes;
+			months.splice((lim.fin.getMonth() + 1), (months.length - lim.fin.getMonth() - 1));
+			months.splice(0, lim.ini.getMonth());
+
+			if(_activo){
+				for(var i = 0; i < months.length; i++){
+					backupMeses.push(0);
+				}
+				for(var i = 1; i <= 12; i++){
+					var dateini = new Date(lim.ini.getFullYear() + ' ' + i + ' 1');
+					var datefinal = new Date(lim.ini.getFullYear() + ' ' + i + ' ' + getCantDiasDelMes(i, lim.ini.getFullYear()));
+					data.forEach( obj => {
+						backupMeses[i-1] = (dateini <= new Date(new Date(obj.fechaIni).yyyymmdd()) && new Date(new Date(obj.fechaIni).yyyymmdd()) <= datefinal) ? (backupMeses[i-1] + 1) : backupMeses[i-1];
+					});
+				}
+				_activo = false;
+			}
+			
+			lstMes = JSON.parse( JSON.stringify( backupMeses ) );
+			lstMes.splice((lim.fin.getMonth() + 1), (months.length - lim.fin.getMonth() - 1));
+			lstMes.splice(0, lim.ini.getMonth());
+
+			return {"meses": months, "cantidad" : lstMes}
+		}
+
+		function drawDashboard(data) {
+			//var dataSet = JSON.parse(JSON.stringify(data));
+
+			var ctx = document.getElementById("dash").getContext("2d");
+
+			var config = {
+				type: 'line',
+				animationEnabled: true,
+				data: {
+				    labels: data.meses,
+				    datasets: [
+				    {
+				        label: "Total de sitios",
+				        fill: false,
+				        backgroundColor: window.chartColors.blue,
+				        borderColor: window.chartColors.blue,
+				        data: data.cantidad
+				    }]
+				},
+				options: {
+				    responsive: false,
+				    title:{
+				        display:true,
+				        text:'Historial de Sitios con problemas',
+				        fontSize: 24
+				    },
+				    tooltips: {
+				        mode: 'index',
+				        intersect: false,
+				    },
+				    hover: {
+				        mode: 'index',
+				        intersect: true
+				    },
+				    scales: {
+				        xAxes: [{
+				            display: true,
+				            scaleLabel: {
+				                display: true,
+				                labelString: 'Meses'
+				            }
+				        }],
+				        yAxes: [{
+				            display: true,
+				            scaleLabel: {
+				                display: true,
+				                labelString: 'Cantidad'
+				            }
+				        }]
+				    },
+				    onClick: updateData
+				}
+			};
+			window.myLine = new Chart(ctx, config);
+
+			document.getElementById('btnAct').addEventListener('click', function() {
+				var lim = obtLim();
+				if(!lim) return
+				var data = filtrarDatos(backupData, lim);
+				config.data.labels = data.meses;
+				config.data.datasets.forEach(function(dataset) {
+				    dataset.data = data.cantidad;
+				});
+
+				window.myLine.update();
+			});
+
+			function updateData (evt){
+				var activePoints = window.myLine.getElementsAtEvent(evt);
+				if (activePoints.length == 0) return false;
+				var firstPoint = activePoints[0];
+				var label = window.myLine.data.labels[firstPoint._index];
+				var value = window.myLine.data.datasets[firstPoint._datasetIndex].data[firstPoint._index];
+				tblSit.search(label.substr(0, 3)).draw();
+			}
+		}
+
+		function writeSitios (data) {
+			var dataSet = [];
+			var options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' };
+			data.forEach( obj => {
+				dataSet.push([obj.dominio, new Date(obj.fechaIni).toLocaleDateString("en-US",options)]);
+			});
+			tblSit = $('#tbSitios').DataTable( {
+				data: dataSet,
+				columns: [
+				    { title: "Dominio" },
+				    { title: "Fecha" }
+				],
+				"scrollY": "200px",
+				"scrollCollapse": true,
+				 "paging": false,
+				"order": [[ 1, "asc" ]]
+			} );
+		}
+
+		function agruparDatos(originalArray, prop, lim) {
+			var newArray = [];
+			var lookupObject  = {};
+
+			for(var i in originalArray) {
+				lookupObject[originalArray[i][prop]] = originalArray[i];
+			}
+			for(i in lookupObject) {
+				newArray.push({ [prop] : lookupObject[i].fecha, count : 0});
+			}
+
+			for(var ui in newArray) {
+				for(var oi in originalArray) {
+					newArray[ui].count = originalArray[oi][prop] === newArray[ui][prop] ? newArray[ui].count + 1 : newArray[ui].count;
+				}
+			}
+			return newArray;
+		}
+
+		function postAjax(url, data, success) {
+			var params = typeof data == 'string' ? data : Object.keys(data).map(
+					function(k){ return encodeURIComponent(k) + '=' + encodeURIComponent(data[k]) }
+				).join('&');
+
+			var xhr = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
+			xhr.open('GET', url);
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState>3 && xhr.status==200) { success(xhr.responseText); }
+			};
+			xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+			xhr.send(params);
+			return xhr;
+		}

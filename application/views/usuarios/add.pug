@@ -1,0 +1,25 @@
+extends /layout.pug
+
+block content
+	div.container.jumbotron
+		h2.header= title
+		div.form-group
+			form(method="post", action="/usuarios" style="width: 500px; margin: auto;")
+				if (message)
+					div.alert.alert-danger= message
+				div.form-group
+					label(for="username") Usuario: 
+					input.form-control#username(type="text", name="username", placeholder="iiiepe@gmail.com", value= username required)
+				div.form-group
+					label(for="password") Password: 
+					input.form-control#password(type="password", name="password" required)
+				div.form-group
+					label(for="Repassword") Repetir Password: 
+					input.form-control#Repassword(type="password", name="Repassword" required)
+				div.form-group
+					label#rol Rol
+					select#rol.form-control(name="rol")
+						option(value="admin") Admin
+						option(value="lectura") Lectura
+				br
+				button.btn.btn-primary(type="submit") Agregar

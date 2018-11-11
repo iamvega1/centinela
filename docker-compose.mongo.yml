@@ -1,0 +1,17 @@
+version: '3'
+services:
+  web:
+    build: .
+    command: nodemon
+    ports:
+      - "3000:3000"
+    links:
+      - mongo
+    environment:
+      MONGODB_URI: "mongodb://mongo:27017/centinela" 
+    volumes:
+      - ./application:/opt/app
+  mongo:
+    image: mongo
+    ports:
+      - 27017:27017

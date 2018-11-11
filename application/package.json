@@ -1,0 +1,38 @@
+{
+  "name": "centinela",
+  "version": "1.0.1",
+  "description": "Sistema que informa el estado de otros sistemas web, es decir si están en funcionamiento (online) o fuera de servicio (offline). ",
+  "main": "server.js",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.18.2",
+    "express": "^4.14.0",
+    "express-method-override": "0.0.3",
+    "express-session": "^1.15.6",
+    "fs": "0.0.1-security",
+    "mongoose": "^4.12.4",
+    "morgan": "^1.7.0",
+    "mysql": "^2.15.0",
+    "nodemailer": "^4.4.0",
+    "path": "^0.12.7",
+    "pug": "^2.0.0-rc.4",
+    "request": "^2.83.0",
+    "serve-favicon": "^2.4.5"
+  },
+  "nodemonConfig": {
+    "ignore": ["*.json"]
+  },
+  "devDependencies": {
+    "supervisor": "^0.11.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "supervisor server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@git.iiiepe.net:luis.vega/centinela.git"
+  },
+  "author": "Luis Vega",
+  "license": "ISC"
+}

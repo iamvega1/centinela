@@ -1,0 +1,30 @@
+extends /layout.pug
+
+block content
+	div.container.jumbotron
+		h1.header= title
+		if (message)
+			div.alert.alert-danger= message
+		article.item(style="width:20%;margin:auto;")
+			form.form(method="post", action="/usuarios/actualizar/" + data._id)
+				input(type="hidden", name="_method", value="PUT")
+				input(type="hidden", name="_id", value=data._id.toString())
+				fieldset
+					div.form-group
+						label(for="dominio") Usuario:
+						input.form-control#username(type="text" name="username" value=data.username, required)
+					div.form-group
+						label(for="name") Password:
+						input.form-control#password(type="password", name="password", value="", required)
+					div.form-group
+						label(for="name") Password:
+						input.form-control#Repassword(type="password", name="Repassword", value="", required)
+					div.form-group
+						label#rol Rol
+						select#rol.form-control(name="rol")
+							option(value="admin" selected=(data.rol == 'admin')) Admin
+							option(value="lectura" selected=(data.rol == 'lectura')) Lectura
+				br
+				div.d-flex.justify-content-around
+					button.btn.btn-primary(type="submit", value="Editar") Guardar
+					a.btn.btn-primary(href="/usuarios/admin") Cancel

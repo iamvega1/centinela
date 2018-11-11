@@ -1,0 +1,59 @@
+extends layout.pug
+
+block content
+	div.container.jumbotron
+		h2.header= title
+		div.form-group
+			form(method="post", action="/sitios" style="width: 500px; margin: auto;")
+				div.form-group
+					label(for="dominio") Dominio: 
+					input.form-control#dominio(type="text", name="dominio", placeholder="ejemplo.edu.mx, monitor.iiiepe.edu.mx", required)
+				div.form-group
+					label(for="name") Nombre: 
+					input.form-control#name(type="text", name="name", placeholder="Monitor", required)
+				div.form-group
+					p Estado:
+					div.form-check.form-check-inline
+						label.custom-control.custom-radio(for="Activo")
+							input.custom-control-input#Activo(type="radio", name="estado", value="true" checked)
+							span.custom-control-indicator
+							span.custom-control-description Activo
+					div.form-check.form-check-inline
+						label.custom-control.custom-radio(for="Desactivo")
+							input.custom-control-input#Desactivo(type="radio", name="estado", value="false")
+							span.custom-control-indicator
+							span.custom-control-description Desactivo
+				div.form-group
+					p Alertar:
+					div.d-flex.justify-content-start.align-items-center
+						div.align-self-center
+							span OFF &nbsp;
+						div.align-self-center
+							label.switch
+								input(type="checkbox" name="alerta" checked)
+								span.slider.round
+						div.txtCenter
+							span &nbsp; ON
+				div.form-group
+					label(for="descripcion") Descripcion: 
+					input.form-control#descripcion(type="text", name="descripcion", placeholder="Sistema que administra las noticias educativas")
+				div.form-group
+					label(for="servidor") Servidor: 
+					input.form-control#servidor(type="text", name="servidor", placeholder="Webser")
+				div.form-group
+					label(for="database") Database: 
+					input.form-control#database(type="text", name="database", placeholder="MongoDB")
+				div.form-group
+					label(for="software") Software:
+					input.form-control#software(type="text", name="software", placeholder="Node")
+				div.form-group
+					label(for="version") Version:
+					input.form-control#version(type="text", name="version", placeholder="1.0")
+				div.form-group
+					label(for="ipLocal") ipLocal
+					input.form-control#ipLocal(type="text", name="ipLocal", placeholder="139.111.0.209")
+				div.form-group
+					label(for="ipPublica") ipPublica
+					input.form-control#ipPublica(type="text", name="ipPublica", placeholder="207.249.168.131")
+				br
+				button.btn.btn-primary(type="submit") Agregar

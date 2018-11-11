@@ -1,0 +1,238 @@
+extends /layout.pug
+
+block content
+	link(rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.16/datatables.min.css")
+	link(rel="stylesheet" href="/css/home.css")
+	link(href="https://fonts.googleapis.com/css?family=Cousine" rel="stylesheet")
+
+	div.container.jumbotron
+		h3.header= title
+		div.form-group(style="border: solid lightgray;border-width: .2rem;border-radius: 8.5px;")
+			div.row(style="width:100%; margin:10px")
+				div.col-md-2
+					h5(style="font-family: 'Cousine', monospace;") Panel
+				div.col-md-8
+					if data.estado
+						div(atyle="line-height: inherit;")
+							p El sistema de alertas se encuentra encendido.
+					else
+						if data.detenidoXtiempo.estado
+							div(atyle="line-height: inherit;")
+								p El sistema de alertas se encuentra apagado, se ensendera de forma automatica en: 
+									strong#tiempoxencender
+							input#fechaIni(type="hidden" value=data.detenidoXtiempo.fechaIni)
+							input#fechaFinal(type="hidden" value=data.detenidoXtiempo.fechaFinal)
+						else
+							div(atyle="line-height: inherit;")
+								p El sistema de alertas se encuentra apagado.
+				div.col-md-2
+					if data.estado
+						div.btn-group(role="group")
+							button#btnAlertar.btn.btn-secondary.dropdown-toggle(type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Desactivar
+							div.dropdown-menu(aria-labelledby="btnAlertar")
+								a.dropdown-item(type="link" href="#" data-toggle="modal" data-target="#mdlApagar") Apagar
+								div.dropdown-divider
+								a.dropdown-item(type="link" href="#" data-toggle="modal" data-target="#mdlApagarXtiempo") Solo por un tiempo
+							div.modal.fade(id="mdlApagar" tabindex="-1" role="dialog" aria-labelledby="mdlApagar" aria-hidden="true")
+								div.modal-dialog(role="document")
+									div.modal-content
+										div.modal-header.alert.alert-warning
+											h5.modal-title Cuidado!
+											button.close(type="button" data-dismiss="modal" aria-label="Close")
+												span(aria-hidden="true") &times;
+										div.modal-body
+											h5 ¿Seguro que desea apagar las alertas?
+										div.modal-footer
+											button.btn.btn-secondary(type="button" data-dismiss="modal") Close
+											form.form(method="post", action="/alerta/actualizar/estado")
+												input(type="hidden", name="_method", value="PUT")
+												input(type="hidden", name="key", value=data.estado.toString())
+												fieldset
+													button.btn.btn-primary(type="submit") Aceptar
+							div.modal.fade(id="mdlApagarXtiempo" tabindex="-1" role="dialog" aria-labelledby="mdlApagarXtiempo" aria-hidden="true")
+								div.modal-dialog(role="document")
+									form.form(method="post", action="/alerta/actualizar/estado/tiempo")
+										input(type="hidden", name="_method", value="PUT")
+										div.modal-content
+											div.modal-header.alert.alert-warning
+												h5.modal-title Cuidado!
+												button.close(type="button" data-dismiss="modal" aria-label="Close")
+													span(aria-hidden="true") &times;
+											div.modal-body
+												h5 Elige el tiempo que parmanecera apagado
+												div.dropdown-divider
+												div.btn-group(data-toggle="buttons")
+													label.btn.btn-secondary.active 1 hr.
+														input(type="radio" name="lapso" autocomplete="off" value="1" checked)
+													label.btn.btn-secondary  2 hrs.
+														input(type="radio" name="lapso" autocomplete="off" value="2")
+													label.btn.btn-secondary  6 hrs.
+														input(type="radio" name="lapso" autocomplete="off" value="6")
+													label.btn.btn-secondary 12 hrs.
+														input(type="radio" name="lapso" autocomplete="off" value="12")
+											div.modal-footer
+												button.btn.btn-secondary(type="submit") Aceptar
+												button.btn.btn-secondary(type="button" data-dismiss="modal") Close
+					else
+						form.form(method="post", action="/alerta/actualizar/estado")
+							input(type="hidden", name="_method", value="PUT")
+							input(type="hidden", name="key", value="estado")
+							fieldset
+								button.btn.btn-primary(type="submit") Encender
+			div.dropdown-divider
+			div.dropdown-divider(style="border-color:darkgray")
+			div.dropdown-divider(style="border-color:darkgray")
+			div.dropdown-divider(style="margin-bottom:60px")
+			div.row(style="width:100%; margin:10px;margin-bottom:60px;")
+				div.col-2
+				div.col-3
+					div#list-tab.list-group(role="tablist")
+						a.list-group-item.list-group-item-action.active#list-timer-list(data-toggle="list" href="#list-timer" role="tab" aria-controls="timer") Intervalo del ciclo de alerta
+						a.list-group-item.list-group-item-action#list-emails-list(data-toggle="list" href="#list-emails" role="tab" aria-controls="emails") Lista de emails
+						a.list-group-item.list-group-item-action#list-config-list(data-toggle="list" href="#list-config" role="tab" aria-controls="config") Ajustes
+				div.col-7
+					div.tab-content#nav-tabContent
+						div.tab-pane.fade.show.active#list-timer(role="tabpanel" aria-labelledby="list-timer-list")
+							form.form-inline(method="post", action="/alerta")
+								input(type="hidden", name="_method", value="PUT")
+								fieldset
+									div.form-group
+										label(for="tiempoAct") Intervalo:
+										input#tiempoAct.form-control.mx-sm-2(type="number" name="intervalo" style="width: 75px;" aria-describedby="tiempodeAct" min="1" value=data.intervalo, required)
+										button#btnAct(type="submit" style="margin-left:20px;display:none;").btn.btn-primary Actualizar
+									small#tiempodeAct.text-muted(style="margin:auto;display:block;") El tiempo se tomara en minutos.
+						div.tab-pane.fade#list-emails(role="tabpanel" aria-labelledby="list-emails-list")
+							div(style="width:50%;margin: auto;")
+								if(data.emails.length)
+									ul.list-group
+										each email in data.emails
+											- var id = aux + 1||1;
+											li.list-group-item.d-flex.justify-content-between.align-items-center #{email}
+												span.badge.badge-danger.badge-pill(style="cursor:pointer;" data-toggle="modal" data-target="#mdl" + id) x
+												div.modal.fade(id="mdl" + id, tabindex="-1" role="dialog" aria-labelledby="email" + email, aria-hidden="true")
+													div.modal-dialog(role="document")
+														div.modal-content
+															div.modal-header.alert.alert-warning
+																h5.modal-title Cuidado!
+																button.close(type="button" data-dismiss="modal" aria-label="Close")
+																	span(aria-hidden="true") &times;
+															div.modal-body
+																h5 Seguro que desea eliminar el correo
+															div.modal-footer
+																button.btn.btn-secondary(type="button" data-dismiss="modal") Close
+																form(method="post", action="/alerta/correo/" + email)
+																	button.btn.btn-primary(type="submit") Aceptar
+																	input(type="hidden", name="_method", value="DELETE")
+																	input(type="hidden", name="email", value=email)
+											- var aux= id;
+										li.list-group-item(style="padding: 0.25rem 1.25rem;")
+											form(method="post", action="/alerta/email").d-flex.justify-content-between.align-items-center
+												input(type="mail" name="newEmail" placeholder="Agregar correo" style="width:100%;height:2rem;border:0;")
+												span.badge.badge-primary.badge-pill(style="cursor:pointer;" onclick="addEmail(this)") +
+						div.tab-pane.fade#list-config(role="tabpanel" style="font-family: 'Cousine';" aria-labelledby="list-config-list")
+							form(method="post", action="/alerta/mail")
+								input(type="hidden", name="_method", value="PUT")
+								p Datos que contendra el correo
+								div.dropdown-divider(style="border-color:darkgray")
+								div.form-group
+									label(for="txtFrom") From:  
+									input.form-control#txtFrom(type="text" name="txtFrom" aria-describedby="txtFromHelp" value=data.mail.from, required)
+									small#txtFromHelp.form-text.text-muted
+								div.form-group
+									label(for="txtAsunto") Asunto:  
+									input.form-control#txtAsunto(type="text" name="txtAsunto" aria-describedby="txtAsuHelp" value=data.mail.subject, required)
+									small#txtAsuHelp.form-text.text-muted Puede utilizar el signo "#" este a su vez sera sustituido por el valor numerico de pag. caidas.
+								div.form-group
+									label(for="txtTexto") Texto:  
+									textarea.form-control#txtTexto(name="txtTexto" aria-describedby="txtTextHelp", required) #{data.mail.text}
+									small#txtTextHelp.form-text.text-muted Puedes utilizar el signo "#li" este a su vez sera sustituido por la lista de sitios que no responden.
+								input.form-control.btn.btn-primary(type="submit" value="Actualizar")
+
+							div.dropdown-divider(style="border-color:darkgray")
+
+							form(method="post", action="/alerta/remitente")
+								input(type="hidden", name="_method", value="PUT")
+								p Datos del Remitente
+								div.form-inline
+									label(for="txtremitente") Remitente: 
+									input.form-control#txtremitente(type="email" name="username" aria-describedby="emailHelp" placeholder="Enter email"  value=data.mail.user, required)
+									small#emailHelp.form-text.text-muted Correo que enviara los correos de alerta.
+								div.form-inline.d-flex
+									label(for="txtpass") Password:  
+									input.form-control#txtpass(type="password" name="password" aria-describedby="passHelp" placeholder="Enter password"  required)
+									input.form-control.btn.btn-primary(type="button" onclick="actualizarRemitente(this)" value="Actualizar" style="margin: auto;")
+									small#passHelp.form-text.text-muted Se requiere el pasword de la cuenta del remitente.
+								div.form-inline
+									label(for="txtRepass") Password:  
+									input.form-control#txtRepass(type="password" name="Repassword" aria-describedby="passReHelp" placeholder="Enter password"  required)
+									small#passReHelp.form-text.text-muted Repite el password para validarlo el formato.
+							
+
+		script.
+			function lapso(btn) {
+				btn.preventDefault();
+				var el = document.getElementById('lapso');
+				el.setAttribute('value', btn.getAttribute('value'));
+			}
+			function addEmail(input) {
+				var indicador = false;
+				input = input.parentElement.firstElementChild;
+
+				indicador = validarEmail(input.value);
+				if(indicador){
+					input.parentNode.submit();
+				} else{
+					input.value = '';
+					input.placeholder = 'Formato del correo invalido';
+				}
+			}
+			function validarEmail( email ) {
+			    expr = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+			    return ( expr.test(email) )
+			}
+			function actualizarRemitente(btn){
+				var username = document.getElementById('txtremitente').value,
+					txtpass = document.getElementById('txtpass').value,
+					txtRepass = document.getElementById('txtRepass'). value;
+				if( username != "" && txtpass != "" && (txtpass === txtRepass)){
+					btn.parentNode.parentElement.submit();
+				}else{
+					alert('error');
+				}
+			}
+			document.addEventListener("DOMContentLoaded", function(d){
+				var timer = d.getElementById('tiempoxencender');
+				var bandera = false;
+				var ciclo = '';
+				d.getElementById('tiempoAct').onchange=changeEventHandler;
+				if(timer){
+					actualizarTimer();
+					ciclo = setInterval(actualizarTimer, 1000);
+				}
+				function actualizarTimer(){
+					var fechaIni = d.getElementById('fechaIni').value;
+					var fechaFinal = d.getElementById('fechaFinal').value;
+					var tiempoTotal = parseInt((fechaFinal - fechaIni)/1000);
+					var hrs = parseInt((tiempoTotal / 60)/60);
+					var txthrs = hrs < 10 ? "0" + hrs : hrs;
+					var min = parseInt((tiempoTotal - (hrs * 60 * 60)) / 60);
+					var txtmin = min < 10 ? "0" + min : min;
+					var seg = parseInt(tiempoTotal - ((hrs * 60 * 60) + min * 60));
+					var txtseg = seg < 10 ? "0" + seg : seg;
+					var text = txthrs + ':' + txtmin + ':' + txtseg;
+					timer.innerHTML = text;
+					d.getElementById('fechaFinal').value = d.getElementById('fechaFinal').value - 1000;
+					if(text === "00:00:00"){
+						clearInterval(ciclo);
+						window.setTimeout(location.reload(), 5000);
+					}
+				}
+				function changeEventHandler(event) {
+					if(bandera) return;
+					var btn = d.getElementById('btnAct');
+					btn.style['display']='block';
+					bandera=true;
+				}
+			}(document));
+				
+		

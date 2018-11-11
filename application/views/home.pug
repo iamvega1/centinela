@@ -1,0 +1,224 @@
+extends layout.pug
+
+block content
+	link(rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.16/datatables.min.css")
+	link(rel="stylesheet" href="/css/home.css")
+	div.container.jumbotron
+		div(style="position:relative")
+			h2.header= title
+			div(style="position:absolute; right:0;top:-30px;")
+				table.table-bordered(style="text-align: center;")
+					thead
+						tr
+							th(colspan = "2") Estatus
+						tr
+							th Color
+							th Descripción
+					tbody
+						tr
+							td.alert-success &nbsp;
+							td Funcionando correctamente
+						tr
+							td.alert-danger &nbsp;
+							td El sitio presenta problemas
+						tr
+							td(style="background-color: rgba(0,0,0,.05);") &nbsp;
+							td Sitio fuera de servicio
+		div.table-responsive
+			if(data.length)
+				table.table.table-striped#tblSitios
+					thead
+						tr
+							th
+							th Dominio
+							th Nombre
+							th Estado
+							th Notificar
+							th Estatus
+							th Descripcion
+							th Servidor
+							th Database
+							th Software
+							th Version
+							th ipLocal
+							th ipPublica
+							th
+					tbody
+						each sitio in data
+							tr
+								td(data-toggle="tooltip" title="Detalles")
+								td(style="vertical-align:middle;")
+									a(href="http://" + sitio.dominio) #{sitio.dominio}
+								td(style="vertical-align:middle;") #{sitio.name}
+								td(style="vertical-align:middle;")
+									if sitio.estado
+										div Activo
+									else
+										div Desactivo
+								td(style="vertical-align:middle;")
+									if !sitio.estado
+										div.d-flex.justify-content-center.alert.jumbotron(style="background-color:rgba(0,0,0,.05);")
+									else
+										div.d-flex.justify-content-center
+											div.txtCenter Off &nbsp;
+											div
+												label.switch
+													input(type="checkbox" checked=sitio.alerta, disabled)
+													span.slider.round
+											div.txtCenter &nbsp; ON
+								td
+									if sitio.estado
+										if sitio.estatus == 'true'
+											div.alert.alert-success(role="alert")
+												strong online
+										else
+											div.alert.alert-danger(role="alert")
+												strong offline
+									else
+										div.alert.jumbotron(style="background-color:rgba(0,0,0,.05);")(role="alert")
+											strong offline
+								td #{sitio.descripcion}
+								td #{sitio.servidor || 'null'}
+								td #{sitio.database || 'null'}
+								td(style="vertical-align:middle;") #{sitio.software}
+								td #{sitio.version || 'null'}
+								td #{sitio.ipLocal || 'null'}
+								td(style="vertical-align:middle;") #{sitio.ipPublica || 'null'}
+								td.d-flex.justify-content-around
+									if rol == 'admin'
+										a.btn.bg-primary.rounded(type="button" data-toggle="tooltip" title="Editar" href="/editar/" + sitio._id)
+											img(src="images/edit.svg" style="width:20px;")
+										a.btn.alert-danger(type="button" data-toggle="modal" data-target="#mdl" + sitio.name)
+											img(src="images/delete.png" data-toggle="tooltip" title="Eliminar" style="width:20px;")
+										div.modal.fade(id="mdl" + sitio.name tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true")
+											div.modal-dialog(role="document")
+												div.modal-content
+													div.modal-header.alert.alert-warning
+														h5.modal-title Cuidado!
+														button.close(type="button" data-dismiss="modal" aria-label="Close")
+															span(aria-hidden="true") &times;
+													div.modal-body
+														h5 Seguro que desea eliminar el sitio
+													div.modal-footer
+														button.btn.btn-secondary(type="button" data-dismiss="modal") Close
+														form(method="post", action="/eliminar/" + sitio._id)
+															button.btn.btn-primary(type="button" onclick="eliminar(this)") Aceptar
+															input(type="hidden", name="_method", value="DELETE")
+				script.
+					function eliminar(input) {
+						input.parentNode.submit();
+					}
+					function format ( d ) {
+					    // `d` is the original data object for the row
+					    return '<table class="table table-striped" >'+
+					    	'<tr>'+
+					            '<td style="text-align:right; padding-right: 5px;">Servidor:</td>'+
+					            '<td style="padding-left: 3px;">'+d[7]+'</td>'+
+					            '<td style="text-align:right; padding-right: 5px;">Database:</td>'+
+					            '<td style="padding-left: 3px;">'+d[8]+'</td>'+
+					            '<td style="text-align:right; padding-right: 5px;">Software:</td>'+
+					            '<td style="padding-left: 3px;">'+d[9]+'</td>'+
+					            '<td style="text-align:right; padding-right: 5px;">Version:</td>'+
+					            '<td style="padding-left: 3px;">'+d[10]+'</td>'+
+					        '</tr>'+
+					        '<tr>'+
+					        	'<td style="text-align:right; padding-right: 5px;">Estado:</td>'+
+					        	'<td style="padding-left: 3px;">'+d[3]+'</td>'+
+					        	'<td style="text-align:right; padding-right: 5px;">ipPublica:</td>'+
+					            '<td style="padding-left: 3px;">'+d[11]+'</td>'+
+					            '<td style="text-align:right; padding-right: 5px;">ipLocal:</td>'+
+					            '<td style="padding-left: 3px;">'+d[12]+'</td>'+
+					        '</tr>'+
+					        '<tr>'+
+					            '<td>Descripcion:</td>'+
+					            '<td colspan="9">'+d[6]+'</td>'+
+					        '</tr>'+
+					    '</table>';
+					}
+					$(document).ready(function() {
+					    var table = $('#tblSitios').DataTable( {
+							"columnDefs": [
+								{
+					                "targets": [ 0 ],
+					                "class": "details-control",
+									"orderable":      false,
+					                "searchable": "false"
+					            },
+					            {
+					                "targets": [ 3 ],
+					                "visible": false,
+					                "searchable": "true"
+					            },
+					            {
+					                "targets": [ 4 ],
+					                "visible": true,
+					                "searchable": false,
+					                "searchable": "true"
+					            },
+					            {
+					                "targets": [ 5 ],
+					                "visible": true,
+					                "searchable": "true"
+					            },
+					            {
+					                "targets": [ 6 ],
+					                "visible": false,
+					                "searchable": "true"
+					            },
+					            {
+					                "targets": [ 7 ],
+					                "visible": false,
+					                "searchable": "true"
+					            },
+					            {
+					                "targets": [ 8 ],
+					                "visible": false,
+					                "searchable": "true"
+					            },
+					            {
+					                "targets": [ 9 ],
+					                "visible": false,
+					                "searchable": "true"
+					            },
+					            {
+					                "targets": [ 10 ],
+					                "visible": false,
+					                "searchable": "true"
+					            },
+					            {
+					                "targets": [ 11 ],
+					                "visible": false,
+					                "searchable": "true"
+					            },
+					            {
+					                "targets": [ 12 ],
+					                "visible": false,
+					                "searchable": "true"
+					            }
+							]
+					    });
+					    
+					    $('[data-toggle="tooltip"]').tooltip();
+					    $('#formSearchTable').append($('#tblSitios_filter'));
+					    $('#tblSitios_filter input').attr('placeholder', 'Search')
+
+					    // Add event listener for opening and closing details
+					    $('#tblSitios tbody').on('click', 'td.details-control', function () {
+					        var tr = $(this).closest('tr');
+					        var row = table.row( tr );
+					 
+					        if ( row.child.isShown() ) {
+					            // This row is already open - close it
+					            row.child.hide();
+					            tr.removeClass('shown');
+					        }
+					        else {
+					            // Open this row
+					            row.child( format(row.data()) ).show();
+					            tr.addClass('shown');
+					        }
+					    } );
+					} );
+			else
+				div.error No tienes sitios que mostrar
+	script(type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.16/datatables.min.js")

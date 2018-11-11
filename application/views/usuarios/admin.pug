@@ -1,0 +1,56 @@
+extends /layout.pug
+
+block content
+	link(rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.16/datatables.min.css")
+	link(rel="stylesheet" href="/css/home.css")
+	div.container.jumbotron
+		h2.header= title
+		div.table-responsive
+			if(data.length)
+				table.table.table-striped#tblUsers(style="width:400px;margin:auto;")
+					thead
+						tr
+							th Nombre
+							th password
+							th Rol
+							th
+					tbody
+						each user in data
+							tr
+								td(style="vertical-align:middle;") #{user.username}
+								td(style="vertical-align:middle;") ***********
+								td(style="vertical-align:middle;") #{user.rol}
+								td.d-flex.justify-content-around
+									a.btn.bg-primary.rounded(type="button" data-toggle="tooltip" title="Editar" href="/usuarios/editar/" + user._id)
+										img(src="/images/edit.svg" style="width:20px;")
+									a.btn.alert-danger(type="button" data-toggle="modal" data-target="#mdl" + user.username)
+										img(src="/images/delete.png" data-toggle="tooltip" title="Eliminar" style="width:20px;")
+									div.modal.fade(id="mdl" + user.username tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true")
+										div.modal-dialog(role="document")
+											div.modal-content
+												div.modal-header.alert.alert-warning
+													h5.modal-title Cuidado!
+													button.close(type="button" data-dismiss="modal" aria-label="Close")
+														span(aria-hidden="true") &times;
+												div.modal-body
+													h5 Seguro que desea eliminar al usuario
+												div.modal-footer
+													button.btn.btn-secondary(type="button" data-dismiss="modal") Close
+													form(method="post", action="/usuarios/eliminar/" + user._id)
+														button.btn.btn-primary(type="button" onclick="eliminar(this)") Aceptar
+														input(type="hidden", name="_method", value="DELETE")
+									
+				script.
+					function eliminar(input) {
+						input.parentNode.submit();
+					}
+					$(document).ready(function() {
+					    var table = $('#tblUsers').DataTable( { });
+					    
+					    $('[data-toggle="tooltip"]').tooltip();
+					    $('#formSearchTable').append($('#tblUsers_filter'));
+					    $('#tblSitios_filter input').attr('placeholder', 'Search')
+					} );
+			else
+				div.error No tienes usuarios que mostrar
+	script(type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.16/datatables.min.js")

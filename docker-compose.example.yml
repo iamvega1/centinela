@@ -1,0 +1,12 @@
+version: '3'
+services:
+  web:
+    build: .
+    command: nodemon
+    ports:
+      - "3000:3000"
+    network_mode: host
+    environment:
+      MONGODB_URI: "mongodb://localhost:27017/centinela"
+    volumes:
+      - ./application:/opt/app
